@@ -1,0 +1,10 @@
+Include/
+Lib/
+Scripts/
+.*swp
+*~
+*bak
+*pyc
+
+# ignore local config file for users
+winhk_config.py

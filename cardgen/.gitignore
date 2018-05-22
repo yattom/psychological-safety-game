@@ -1,0 +1,14 @@
+Include/
+Lib/
+Scripts/
+man/
+share/
+pyenv.cfg
+.*swp
+*~
+*bak
+*pyc
+
+# credentials
+*.json
+
