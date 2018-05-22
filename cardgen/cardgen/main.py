@@ -1,7 +1,7 @@
 # coding: utf-8
 from pprint import pprint
 
-def main():
+def read_card_data():
     import gspread
     from oauth2client.service_account import ServiceAccountCredentials
 
@@ -16,6 +16,11 @@ def main():
     for sheet in gc.open_by_key(SPREADSHEET_ID).worksheets():
         cells = sheet.get_all_records()
         pprint(cells)
+
+
+def main():
+    read_card_data()
+
 
 if __name__=='__main__':
     main()
