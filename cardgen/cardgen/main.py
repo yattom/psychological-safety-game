@@ -1,14 +1,18 @@
 # coding: utf-8
 from pprint import pprint
 
-def read_card_data():
-    import gspread
+def auth():
     from oauth2client.service_account import ServiceAccountCredentials
 
     scope = ['https://spreadsheets.google.com/feeds',
             'https://www.googleapis.com/auth/drive']
 
     credentials = ServiceAccountCredentials.from_json_keyfile_name('API Project-a38c7273d3d8.json', scope)
+    return credentials
+
+
+def read_card_data(credentials):
+    import gspread
 
     gc = gspread.authorize(credentials)
 
@@ -18,8 +22,13 @@ def read_card_data():
         pprint(cells)
 
 
+def create_slides(credentials):
+    pass
+
 def main():
-    read_card_data()
+    credentials = auth()
+    read_card_data(credentials)
+    create_slides(credentials)
 
 
 if __name__=='__main__':
