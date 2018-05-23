@@ -5,6 +5,7 @@ def auth():
     from oauth2client.service_account import ServiceAccountCredentials
 
     scope = ['https://spreadsheets.google.com/feeds',
+            'https://www.googleapis.com/auth/presentations',
             'https://www.googleapis.com/auth/drive']
 
     credentials = ServiceAccountCredentials.from_json_keyfile_name('API Project-a38c7273d3d8.json', scope)
@@ -23,7 +24,13 @@ def read_card_data(credentials):
 
 
 def create_slides(credentials):
-    pass
+    import httplib2
+    from googleapiclient.discovery import build
+    http = httplib2.Http()
+    http = credentials.authorize(http)
+    service = build("slides", "v1", http=http)
+    pprint(service)
+    return service
 
 def main():
     credentials = auth()
