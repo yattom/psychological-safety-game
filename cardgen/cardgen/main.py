@@ -49,16 +49,59 @@ def create_service_for_slides(credentials):
     return service
 
 
-def create_new_presentation(service, metadata, title, now):
+def create_new_presentation(service, metadata, title, timestamp):
     fileId = metadata[title]
-    #new_filename = '/' + metadata['出力フォルダ'] + '/' + now + '_' + title
-    new_filename = now + '_' + title
+    #new_filename = '/' + metadata['出力フォルダ'] + '/' + timestamp + '_' + title
+    new_filename = timestamp + '_' + title
     body = { 'name': new_filename }
     new_file = service.files().copy(fileId=fileId, body=body).execute()
     return new_file
 
 
-def create_presentation(credentials, data, now):
+def detect_elements_to_modify(keywords, presentation):
+    # TODO: グループ化した要素に未対応
+    elements_to_modify = {}
+    for key in keywords:
+        for element in presentation['slides'][0]['pageElements']:
+            try:
+                if len(element['shape']['text']['textElements']) > 0:
+                    for text_element in element['shape']['text']['textElements']:
+                        try:
+                            if text_element['textRun']['content'].strip() == key:
+                                elements_to_modify[key] = element['objectId']
+                        except KeyError:
+                            continue
+            except KeyError:
+                continue
+    return elements_to_modify
+
+
+def add_slides(service, gfile, slide_data):
+    requests = []
+    presentation = service.presentations().get(presentationId=gfile['id']).execute()
+    template_slide_id = presentation['slides'][0]['objectId']
+    elements_to_modify = detect_elements_to_modify(slide_data[0].keys(), presentation)
+    for i, slide in enumerate(slide_data):
+        new_element_ids = { key:elements_to_modify[key]+'_'+str(i) for key in elements_to_modify }
+        objectIds = { elements_to_modify[key]:new_element_ids[key] for key in elements_to_modify }
+        requests.append({ 'duplicateObject': { 'objectId': template_slide_id, 'objectIds': objectIds }})
+        for key in elements_to_modify:
+            requests.append({ 'deleteText':
+                                { 'objectId': new_element_ids[key],
+                                  'textRange': { 'type': 'ALL' } 
+                                }
+                            })
+            requests.append({ 'insertText':
+                                { 'objectId': new_element_ids[key],
+                                  'text': slide[key],
+                                  'insertionIndex': 0,
+                                }
+                            })
+    request.append({ 'deleteObject': { 'objectId': template_slide_id } })
+    service.presentations().batchUpdate(presentationId=gfile['id'], body={ 'requests': requests }).execute()
+
+
+def create_presentation(credentials, data, timestamp):
     slides_service = create_service_for_slides(credentials)
     drive_service = create_service_for_drive(credentials)
     metadata = {}
@@ -72,14 +115,22 @@ def create_presentation(credentials, data, now):
             continue
         if title not in metadata:
             continue
-        new_file = create_new_presentation(drive_service, metadata, title, now)
+        new_file = create_new_presentation(drive_service, metadata, title, timestamp)
+        add_slides(slides_service, new_file, data[title])
+        export_pdf(drive_service, new_file)
 
+
+def export_pdf(service, file_to_export):
+    raw = service.files().export(fileId=file_to_export['id'], mimeType='application/pdf').execute()
+    with open(file_to_export['name'] + ".pdf", 'wb') as f:
+        f.write(raw)
 
 def main():
-    now = datetime.datetime.now().isoformat(timespec='seconds')
+    timestamp = datetime.datetime.now().isoformat(timespec='seconds')
+    timestamp = timestamp.replace(':', '')
     credentials = auth()
     data = read_card_data(credentials)
-    create_presentation(credentials, data, now)
+    create_presentation(credentials, data, timestamp)
 
 
 if __name__=='__main__':
