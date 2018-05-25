@@ -3,6 +3,7 @@ Lib/
 Scripts/
 man/
 share/
+.pytest_cache/
 pyenv.cfg
 .*swp
 *~
