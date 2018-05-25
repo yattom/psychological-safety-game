@@ -97,8 +97,12 @@ def add_slides(service, gfile, slide_data):
                                   'insertionIndex': 0,
                                 }
                             })
-    request.append({ 'deleteObject': { 'objectId': template_slide_id } })
+    requests.append({ 'deleteObject': { 'objectId': template_slide_id } })
     service.presentations().batchUpdate(presentationId=gfile['id'], body={ 'requests': requests }).execute()
+
+
+def delete_presensation(service, gfile):
+    service.files().delete(fileId=gfile['id']).execute()
 
 
 def create_presentation(credentials, data, timestamp):
@@ -118,12 +122,14 @@ def create_presentation(credentials, data, timestamp):
         new_file = create_new_presentation(drive_service, metadata, title, timestamp)
         add_slides(slides_service, new_file, data[title])
         export_pdf(drive_service, new_file)
+        delete_presensation(drive_service, new_file)
 
 
 def export_pdf(service, file_to_export):
     raw = service.files().export(fileId=file_to_export['id'], mimeType='application/pdf').execute()
     with open(file_to_export['name'] + ".pdf", 'wb') as f:
         f.write(raw)
+
 
 def main():
     timestamp = datetime.datetime.now().isoformat(timespec='seconds')
