@@ -13,3 +13,5 @@ pyenv.cfg
 # credentials
 *.json
 
+# output / generated
+*.pdf
