@@ -3,8 +3,6 @@ from pprint import pprint
 import datetime
 import sys
 
-SPREADSHEET_ID = '1Or3lnAR1UAIZmzUY7_iQRgNlGiVV5EEBy5NTPrzurG4'
-
 
 def auth():
     from oauth2client.service_account import ServiceAccountCredentials
@@ -20,13 +18,13 @@ def auth():
     return credentials
 
 
-def read_card_data(credentials):
+def read_card_data(spreadsheet_id, credentials):
     import gspread
 
     gc = gspread.authorize(credentials)
 
     all_data = {}
-    for sheet in gc.open_by_key(SPREADSHEET_ID).worksheets():
+    for sheet in gc.open_by_key(spreadsheet_id).worksheets():
         cells = sheet.get_all_records()
         all_data[sheet.title] = cells
     return all_data
@@ -136,12 +134,11 @@ def main():
     if len(sys.argv) < 2:
         print("usage: python cardgen/main.py 1Or3lnAR1UAIZmzUY7_iQRgNlGiVV5EEBy5NTPrzurG4")
         exit()
-    else:
-        spreadsheet_id = sys.argv[1]
+    spreadsheet_id = sys.argv[1]
     timestamp = datetime.datetime.now().isoformat(timespec='seconds')
     timestamp = timestamp.replace(':', '')
     credentials = auth()
-    data = read_card_data(credentials)
+    data = read_card_data(spreadsheet_id, credentials)
     create_presentation(credentials, data, timestamp)
 
 
