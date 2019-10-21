@@ -1,6 +1,7 @@
 # coding: utf-8
 from pprint import pprint
 import datetime
+import sys
 
 SPREADSHEET_ID = '1Or3lnAR1UAIZmzUY7_iQRgNlGiVV5EEBy5NTPrzurG4'
 
@@ -132,6 +133,11 @@ def export_pdf(service, file_to_export):
 
 
 def main():
+    if len(sys.argv) < 2:
+        print("usage: python cardgen/main.py 1Or3lnAR1UAIZmzUY7_iQRgNlGiVV5EEBy5NTPrzurG4")
+        exit()
+    else:
+        spreadsheet_id = sys.argv[1]
     timestamp = datetime.datetime.now().isoformat(timespec='seconds')
     timestamp = timestamp.replace(':', '')
     credentials = auth()
