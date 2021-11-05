@@ -2,6 +2,7 @@
 from pprint import pprint
 import datetime
 import sys
+import pathlib
 
 
 def auth():
@@ -14,7 +15,12 @@ def auth():
             'https://www.googleapis.com/auth/drive.file',
             ]
 
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('API Project-a38c7273d3d8.json', scope)
+    try:
+        files = pathlib.Path('.').glob('API Project-*')
+        keyfile_name = str(next(files))
+    except StopIteration:
+        raise RuntimeError('key file not found')
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(keyfile_name, scope)
     return credentials
 
 
