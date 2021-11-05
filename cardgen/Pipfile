@@ -8,7 +8,6 @@ pytest = "*"
 gspread = "*"
 "oauth2client" = "*"
 ipython = "*"
-pyreadline = "*"
 google-api-python-client = "*"
 
 [dev-packages]
